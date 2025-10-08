@@ -1,0 +1,26 @@
+#!/bin/bash
+
+percentage=$(cat /sys/class/power_supply/BAT0/capacity)
+
+if [ "$percentage" -gt 75 ]; then
+    colour="#A7C080"
+elif [ "$percentage" -gt 25 ]; then
+    colour="#DBBC7F"
+else
+    colour="#E67E80"
+fi
+
+
+if [ "$percentage" -lt 10 ]; then
+	symbol=" "
+elif [ "$percentage" -lt 25 ]; then
+	symbol=" "
+elif [ "$percentage" -lt 50 ]; then
+	symbol=" "
+elif [ "$percentage" -lt 80 ]; then
+	symbol=" "
+else
+	symbol=" "
+fi	
+
+echo "%{F${colour}}$symbol$percentage% %{F-}"
