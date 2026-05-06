@@ -1,0 +1,369 @@
+---
+- name: Setup Lubuntu Rice
+  hosts: localhost
+  become: true
+  vars:
+    dotfiles_repo: "https://github.com/NotAdson/dotfiles"
+    neovim_url: "https://github.com/neovim/neovim/releases/download/v0.12.2/nvim-linux-x86_64.appimage"
+    alacritty_version: "v0.17.0"
+    alacritty_url: "https://github.com/alacritty/alacritty/archive/refs/tags/{{ alacritty_version }}.tar.gz"
+    user_home: "{{ lookup('env', 'HOME') }}"
+    user_name: "{{ lookup('env', 'USER') }}"
+
+  tasks:
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+
+    - name: Install base dependencies
+      apt:
+        name:
+          - software-properties-common
+          - git
+          - curl
+          - wget
+          - build-essential
+          - cmake
+          - pkg-config
+          - libfreetype6-dev
+          - libfontconfig1-dev
+          - libxcb-xfixes0-dev
+          - libxkbcommon-dev
+          - python3
+          - python3-pip
+          - python3-venv
+          - nodejs
+          - npm
+          - ripgrep
+          - fd-find
+          - gzip
+          - scdoc
+          - libegl1-mesa-dev
+          - unzip
+          - imagemagick
+        state: present
+
+    - name: Install nala
+      apt:
+        name: nala
+        state: present
+
+    - name: Add Mozilla PPA for Firefox
+      apt_repository:
+        repo: ppa:mozillateam/ppa
+        state: present
+
+    - name: Add Fastfetch PPA
+      apt_repository:
+        repo: ppa:zhangsongcui3371/fastfetch
+        state: present
+
+    - name: Set Firefox PPA priority
+      copy:
+        dest: /etc/apt/preferences.d/mozilla-firefox
+        content: |
+          Package: *
+          Pin: release o=LP-PPA-mozillateam
+          Pin-Priority: 1001
+
+          Package: firefox*
+          Pin: release o=LP-PPA-mozillateam
+          Pin-Priority: 1001
+
+    - name: Remove Firefox snap
+      shell: |
+        snap remove firefox || true
+      args:
+        executable: /bin/bash
+
+    - name: Install Firefox from PPA
+      apt:
+        name: firefox
+        state: present
+        update_cache: yes
+
+    - name: Install Timeshift and Grub integration
+      block:
+        - name: Install Timeshift
+          apt:
+            name: timeshift
+            state: present
+        - name: Add timeshift-autosnap-apt PPA
+          apt_repository:
+            repo: ppa:wmutschl/timeshift-autosnap-apt
+            state: present
+        - name: Install timeshift-autosnap-apt and grub-btrfs
+          apt:
+            name:
+              - timeshift-autosnap-apt
+              - grub-btrfs
+            state: present
+            update_cache: yes
+
+    - name: Configure GRUB
+      block:
+        - name: Set GRUB timeout to 2 seconds
+          lineinfile:
+            path: /etc/default/grub
+            regexp: '^GRUB_TIMEOUT='
+            line: 'GRUB_TIMEOUT=2'
+
+        - name: Set GRUB timeout style to menu
+          lineinfile:
+            path: /etc/default/grub
+            regexp: '^GRUB_TIMEOUT_STYLE='
+            line: 'GRUB_TIMEOUT_STYLE=menu'
+
+        - name: Disable GRUB theme
+          lineinfile:
+            path: /etc/default/grub
+            regexp: '^GRUB_THEME='
+            state: absent
+
+        - name: Remove Lubuntu GRUB theme configuration snippet
+          file:
+            path: /etc/default/grub.d/lubuntu-grub-theme.cfg
+            state: absent
+          notify: update-grub
+
+    - name: Install Rice dependencies
+      apt:
+        name:
+          - i3-wm
+          - i3lock
+          - dex
+          - network-manager-gnome
+          - xss-lock
+          - feh
+          - picom
+          - polybar
+          - rofi
+          - btop
+          - lxqt-policykit-agent
+          - pipewire
+          - wireplumber
+          - nvidia-utils-common
+          - pulseaudio-utils
+          - wireless-tools
+          - libuv1-dev
+          - libuv1
+          - fastfetch
+          - ranger
+        state: present
+
+    - name: Install Flatpak
+      apt:
+        name: flatpak
+        state: present
+
+    - name: Add Flathub repository
+      flatpak_remote:
+        name: flathub
+        state: present
+        flatpakrepo_url: https://dl.flathub.org/repo/flathub.flatpakrepo
+
+    - name: Install Flameshot via Flatpak
+      flatpak:
+        name: org.flameshot.Flameshot
+        state: present
+
+    - name: Install Rustup
+      shell: |
+        curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+      become: false
+      args:
+        creates: "{{ user_home }}/.cargo/bin/rustc"
+
+    - name: Build and install Alacritty
+      block:
+        - name: Create temporary directory for Alacritty
+          tempfile:
+            state: directory
+            suffix: alacritty_build
+          register: alacritty_temp
+
+        - name: Download Alacritty source
+          get_url:
+            url: "{{ alacritty_url }}"
+            dest: "{{ alacritty_temp.path }}/alacritty.tar.gz"
+
+        - name: Extract Alacritty source
+          unarchive:
+            src: "{{ alacritty_temp.path }}/alacritty.tar.gz"
+            dest: "{{ alacritty_temp.path }}"
+            remote_src: yes
+
+        - name: Build Alacritty
+          shell: |
+            source {{ user_home }}/.cargo/env
+            cargo build --release
+          args:
+            chdir: "{{ alacritty_temp.path }}/alacritty-{{ alacritty_version | regex_replace('^v', '') }}"
+            executable: /bin/bash
+          become: false
+
+        - name: Install Alacritty binary
+          copy:
+            src: "{{ alacritty_temp.path }}/alacritty-{{ alacritty_version | regex_replace('^v', '') }}/target/release/alacritty"
+            dest: /usr/local/bin/alacritty
+            mode: '0755'
+            remote_src: yes
+
+        - name: Install Alacritty terminfo
+          shell: tic -xe alacritty,alacritty-direct extra/alacritty.info
+          args:
+            chdir: "{{ alacritty_temp.path }}/alacritty-{{ alacritty_version | regex_replace('^v', '') }}"
+
+        - name: Install Alacritty desktop entry
+          shell: |
+            desktop-file-install extra/linux/Alacritty.desktop
+            update-desktop-database
+          args:
+            chdir: "{{ alacritty_temp.path }}/alacritty-{{ alacritty_version | regex_replace('^v', '') }}"
+
+        - name: Install Alacritty logo
+          copy:
+            src: "{{ alacritty_temp.path }}/alacritty-{{ alacritty_version | regex_replace('^v', '') }}/extra/logo/alacritty-term.svg"
+            dest: /usr/share/pixmaps/Alacritty.svg
+            remote_src: yes
+
+        - name: Install Alacritty man pages
+          shell: |
+            mkdir -p /usr/local/share/man/man1
+            mkdir -p /usr/local/share/man/man5
+            scdoc < extra/man/alacritty.1.scd | gzip -c > /usr/local/share/man/man1/alacritty.1.gz
+            scdoc < extra/man/alacritty-msg.1.scd | gzip -c > /usr/local/share/man/man1/alacritty-msg.1.gz
+            scdoc < extra/man/alacritty.5.scd | gzip -c > /usr/local/share/man/man5/alacritty.5.gz
+            scdoc < extra/man/alacritty-bindings.5.scd | gzip -c > /usr/local/share/man/man5/alacritty-bindings.5.gz
+          args:
+            chdir: "{{ alacritty_temp.path }}/alacritty-{{ alacritty_version | regex_replace('^v', '') }}"
+
+    - name: Install Neovim AppImage
+      get_url:
+        url: "{{ neovim_url }}"
+        dest: /usr/local/bin/nvim
+        mode: '0755'
+
+    - name: Add nvim alias and fd alias to .bashrc
+      blockinfile:
+        path: "{{ user_home }}/.bashrc"
+        block: |
+          alias nvim='/usr/local/bin/nvim'
+          alias fd='fdfind'
+        marker: "# {mark} ANSIBLE MANAGED ALIASES"
+      become: false
+
+    - name: Install Packer.nvim
+      git:
+        repo: https://github.com/wbthomason/packer.nvim
+        dest: "{{ user_home }}/.local/share/nvim/site/pack/packer/start/packer.nvim"
+        depth: 1
+      become: false
+
+    - name: Install Gemini CLI
+      npm:
+        name: "@google/gemini-cli"
+        global: yes
+
+    - name: Install Pywal and color algorithms
+      pip:
+        name:
+          - pywal
+          - haishoku
+          - colorz
+        executable: pip3
+        extra_args: --break-system-packages
+
+    - name: Install DepartureMono Nerd Font
+      block:
+        - name: Create fonts directory
+          file:
+            path: "{{ user_home }}/.local/share/fonts"
+            state: directory
+            mode: '0755'
+          become: false
+
+        - name: Download DepartureMono Nerd Font
+          get_url:
+            url: "https://github.com/ryanoasis/nerd-fonts/releases/latest/download/DepartureMono.zip"
+            dest: "/tmp/DepartureMono.zip"
+
+        - name: Extract font
+          unarchive:
+            src: "/tmp/DepartureMono.zip"
+            dest: "{{ user_home }}/.local/share/fonts"
+            remote_src: yes
+          become: false
+
+        - name: Update font cache
+          shell: fc-cache -f -v
+          become: false
+
+    - name: Deploy dotfiles
+      block:
+        - name: Clone dotfiles repository
+          git:
+            repo: "{{ dotfiles_repo }}"
+            dest: "{{ user_home }}/.dotfiles"
+            recursive: yes
+          become: false
+
+        - name: Create .config directory
+          file:
+            path: "{{ user_home }}/.config"
+            state: directory
+          become: false
+
+        - name: Create symlinks for dotfiles
+          file:
+            src: "{{ user_home }}/.dotfiles/{{ item }}"
+            dest: "{{ user_home }}/.config/{{ item }}"
+            state: link
+            force: yes
+          loop:
+            - i3
+            - polybar
+            - alacritty
+            - nvim
+            - btop
+            - rofi
+            - wal
+            - picom.conf
+            - wallpapers
+          become: false
+
+    - name: Ensure Wallpaper directory exists in dotfiles
+      file:
+        path: "{{ user_home }}/.dotfiles/wallpapers"
+        state: directory
+      become: false
+
+    - name: Get wallpaper from local Pictures if available
+      copy:
+        src: "{{ user_home }}/Pictures/Wallpapers/link.jpg"
+        dest: "{{ user_home }}/.dotfiles/wallpapers/link.png"
+        remote_src: yes
+      become: false
+      ignore_errors: yes
+      register: local_wallpaper
+
+    - name: Download wallpaper from repo if local copy failed
+      get_url:
+        url: "https://raw.githubusercontent.com/NotAdson/dotfiles/main/wallpapers/link.jpg"
+        dest: "{{ user_home }}/.dotfiles/wallpapers/link.png"
+      become: false
+      when: local_wallpaper is failed
+
+    - name: Initialize Pywal with Haishoku algorithm
+      shell: |
+        wal -i {{ user_home }}/.config/wallpapers/link.png --backend haishoku
+      become: false
+      ignore_errors: yes
+
+  handlers:
+    - name: update-grub
+      command: update-grub
+
+    - name: reload i3
+      shell: i3-msg reload
+      become: false

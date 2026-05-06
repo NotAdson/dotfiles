@@ -33,7 +33,7 @@ exec --no-startup-id xss-lock --transfer-sleep-lock -- i3lock --nofork --blur 5
 
 # Wallpaper, Keyboard Layout, Bar, and Compositor (Reloaded on Mod+Shift+R)
 exec_always --no-startup-id ~/.config/polybar/launch.sh
-exec_always --no-startup-id feh --bg-scale ~/Pictures/Wallpapers/link.jpg
+exec_always --no-startup-id feh --bg-scale ~/.config/wallpapers/link.png
 exec_always --no-startup-id picom -b
 
 # --- AESTHETICS & WINDOW RULES ---
@@ -58,7 +58,6 @@ bindsym $mod+i exec --no-startup-id wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle
 
 # System Utilities (Screenshot, Lock, Poweroff)
 bindsym Print exec --no-startup-id flameshot gui
-bindsym $mod+Shift+p exec --no-startup-id i3lock --nofork -u -i ~/Pictures/Wallpapers/windows_f.png
 bindsym $mod+Shift+o exec --no-startup-id systemctl poweroff
 
 
