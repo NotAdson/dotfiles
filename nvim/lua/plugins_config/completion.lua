@@ -1,9 +1,16 @@
-local cmp = require("cmp")
+local status_ok, cmp = pcall(require, "cmp")
+if not status_ok then
+  return
+end
+
+local luasnip_status_ok, luasnip = pcall(require, "luasnip")
 
 cmp.setup({
   snippet = {
     expand = function(args)
-      require("luasnip").lsp_expand(args.body)
+      if luasnip_status_ok then
+        luasnip.lsp_expand(args.body)
+      end
     end,
   },
   mapping = cmp.mapping.preset.insert({
@@ -14,8 +21,8 @@ cmp.setup({
     end, { "i", "s" }),
 
     ["<Tab>"] = cmp.mapping(function(fallback)
-      local copilot = require("copilot.suggestion")
-      if copilot.is_visible() then
+      local copilot_status_ok, copilot = pcall(require, "copilot.suggestion")
+      if copilot_status_ok and copilot.is_visible() then
         copilot.accept()
       elseif cmp.visible() then
         cmp.confirm({ select = true })
@@ -28,5 +35,7 @@ cmp.setup({
     { name = "copilot" },
     { name = "nvim_lsp" },
     { name = "luasnip" },
+    { name = "buffer" },
+    { name = "path" },
   }),
 })

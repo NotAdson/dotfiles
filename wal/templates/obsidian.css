@@ -1,0 +1,9 @@
+.theme-dark, .theme-light {
+    --background-primary: {background};
+    --background-secondary: {color0};
+    --background-secondary-alt: {color1};
+    --text-normal: {foreground};
+    --text-muted: {color8};
+    --interactive-accent: {color4};
+    --text-accent: {color4};
+}

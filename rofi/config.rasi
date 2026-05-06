@@ -1,16 +1,7 @@
 configuration {
-  modi: "drun,run";
-  font: "Noto Sans 12";
-  show-icons: true;
+    modi: "drun,run";
+    font: "DepartureMono Nerd Font Mono 12";
+    show-icons: true;
 }
 
-* {
-    background:            #272E33;
-    foreground:            #D3C6AA;
-    selected-background:   #384B55;
-    selected-foreground:   #A7C080;
-    border:                #859289;
-    separator:             #2E383C;
-    active-background:     #7FBBB3;
-    active-foreground:     #272E33;
-}
+@theme "~/.cache/wal/colors-rofi-dark.rasi"
