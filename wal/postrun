@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+# Restart Polybar
+~/.config/polybar/launch.sh
+
+# Update Pywalfox
+/home/adson/.local/bin/pywalfox update
+
+# Force Alacritty to reload
+touch ~/.config/alacritty/alacritty.toml
+

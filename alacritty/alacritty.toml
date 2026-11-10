@@ -1,6 +1,5 @@
-[general]
-import = [
-    "~/.cache/wal/colors-alacritty.toml"
+general.import = [
+    "/home/adson/.cache/wal/colors-alacritty.toml"
 ]
 
 [font]

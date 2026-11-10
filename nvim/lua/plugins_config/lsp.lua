@@ -12,7 +12,7 @@ end
 
 if mason_lspconfig_status_ok then
   mason_lspconfig.setup({
-      ensure_installed = { "pyright", "lua_ls", "zls", "clangd", "ruff" },
+      ensure_installed = { "pyright", "lua_ls", "zls", "clangd", "ruff", "jdtls" },
       automatic_installation = true,
   })
 end
@@ -107,9 +107,19 @@ vim.lsp.config("ruff", {
   capabilities = capabilities,
 })
 
+-- Configure Java (eclipse.jdt.ls; requires a JDK on PATH)
+vim.lsp.config("jdtls", {
+  on_attach = on_attach,
+  capabilities = capabilities,
+  -- jdtls v1.63+ bundles require Java 25 to run; JDK 25 installed at
+  -- ~/.local/share/java for jdtls only (system default stays Java 21)
+  cmd_env = { JAVA_HOME = vim.fs.joinpath(vim.fn.expand("~"), ".local/share/java/jdk-25") },
+})
+
 -- Enable the configured servers
 vim.lsp.enable("pyright")
 vim.lsp.enable("lua_ls")
 vim.lsp.enable("zls")
 vim.lsp.enable("clangd")
 vim.lsp.enable("ruff")
+vim.lsp.enable("jdtls")

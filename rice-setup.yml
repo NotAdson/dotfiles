@@ -330,6 +330,7 @@
             - wal
             - picom.conf
             - wallpapers
+            - opencode
           become: false
 
     - name: Ensure Wallpaper directory exists in dotfiles

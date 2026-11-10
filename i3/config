@@ -33,7 +33,7 @@ exec --no-startup-id xss-lock --transfer-sleep-lock -- i3lock --nofork --blur 5
 
 # Wallpaper, Keyboard Layout, Bar, and Compositor (Reloaded on Mod+Shift+R)
 exec_always --no-startup-id ~/.config/polybar/launch.sh
-exec_always --no-startup-id feh --bg-scale ~/.config/wallpapers/link.png
+exec_always --no-startup-id wal -R
 exec_always --no-startup-id picom -b
 
 # --- AESTHETICS & WINDOW RULES ---
@@ -111,6 +111,8 @@ bindsym $mod+a focus parent
 bindsym $mod+Shift+m mark swap_marker
 bindsym $mod+m [con_mark="swap_marker"] swap container
 
+# Lock screen
+bindsym $mod+p exec --no-startup-id i3lock --blur 5
 
 # --- WORKSPACE MANAGEMENT ---
 # Switch to workspace
@@ -194,3 +196,4 @@ client.background        $bg
 
 # Permissions
 exec --no-startup-id lxqt-policykit-agent
+exec_always --no-startup-id ~/.local/bin/pywalfox start
