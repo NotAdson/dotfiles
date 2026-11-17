@@ -68,7 +68,7 @@
           "opencode-go/gemini-4-argon",
           "opencode-go/kimi-k2.7-code",
           "opencode-go/kimi-k3.1-pro",
-          "nvidia/z-ai/glm-5.3-flash"
+          "opencode/hy4-flash-free"
         ],
         "variant": "xhigh",
         "skills": [
@@ -78,18 +78,19 @@
       },
       "council": {
         "model": [
-          "opencode/glm-5.3-flash-free",
+          "opencode/deepseek-v4.1-flash-free",
           "opencode-go/deepseek-v4.1-flash",
           "nvidia/z-ai/glm-5.3-flash"
         ],
+        "variant": "high",
         "skills": [],
         "mcps": []
       },
       "librarian": {
         "model": [
           "opencode/deepseek-v4.1-flash-free",
-          "nvidia/deepseek-ai/deepseek-v4.1-flash",
           "opencode-go/deepseek-v4.1-flash",
+          "nvidia/deepseek-ai/deepseek-v4.1-flash",
           "opencode-go/glm-5.3-flash"
         ],
         "skills": [],
@@ -102,8 +103,8 @@
       "explorer": {
         "model": [
           "opencode/deepseek-v4.1-flash-free",
-          "nvidia/deepseek-ai/deepseek-v4.1-flash",
           "opencode-go/deepseek-v4.1-flash",
+          "nvidia/deepseek-ai/deepseek-v4.1-flash",
           "opencode-go/minimax-m3.1-flash"
         ],
         "skills": [],
