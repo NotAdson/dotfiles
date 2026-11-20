@@ -186,7 +186,7 @@
       },
       "oracle": {
         "model": "nvidia/z-ai/glm-5.3-flash",
-        "variant": "max",
+        "variant": "thinking",
         "skills": [
           "simplify"
         ],
@@ -219,7 +219,6 @@
       },
       "fixer": {
         "model": "opencode/big-pickle",
-        "variant": "high",
         "skills": [],
         "mcps": []
       },
