@@ -145,10 +145,10 @@
       },
       "janitor": {
         "model": [
-          "opencode/deepseek-v4.1-flash-free",
           "opencode-go/kimi-k2.7-code",
           "opencode-go/glm-5.3-flash",
-          "nvidia/z-ai/glm-5.3-flash"
+          "nvidia/z-ai/glm-5.3-flash",
+          "opencode/deepseek-v4.1-flash-free"
         ],
         "variant": "high",
         "skills": [],
