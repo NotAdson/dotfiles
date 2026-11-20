@@ -3,3 +3,7 @@ package.json
 package-lock.json
 bun.lock
 .gitignore
+service.json
+*.bak
+*.write-lock/
+.opencode/
