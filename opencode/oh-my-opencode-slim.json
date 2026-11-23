@@ -46,8 +46,7 @@
         }
       }
     },
-    "default_preset": "ai-index",
-    "councillor_execution_mode": "parallel"
+    "default_preset": "ai-index"
   },
   "presets": {
     "ai-index": {
